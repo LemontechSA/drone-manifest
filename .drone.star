@@ -228,6 +228,7 @@ def manifest(ctx):
       'ref': [
         'refs/heads/master',
         'refs/tags/**',
+        'refs/pull/**',
       ],
     },
   }]
