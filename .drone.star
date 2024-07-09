@@ -165,14 +165,6 @@ def linux(ctx, arch):
         'commands': build,
       },
       {
-        'name': 'executable',
-        'image': 'golang:1.21',
-        'pull': 'always',
-        'commands': [
-          './release/linux/%s/drone-manifest-ecr --help' % (arch),
-        ],
-      },
-      {
         'name': 'docker',
         'image': 'plugins/docker',
         'pull': 'always',
