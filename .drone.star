@@ -127,11 +127,11 @@ def linux(ctx, arch):
 
   if ctx.build.event == 'tag':
     build = [
-      'go build -v -ldflags "-X main.version=%s" -a -tags netgo -o release/linux/%s/drone-manifest-ecr ./cmd/drone-manifest-ecr' % (ctx.build.ref.replace("refs/tags/v", ""), arch),
+      'go build -v -ldflags "-X main.version=%s" -a -tags netgo -o release/linux/%s/drone-manifest-ecr .' % (ctx.build.ref.replace("refs/tags/v", ""), arch),
     ]
   else:
     build = [
-      'go build -v -ldflags "-X main.version=%s" -a -tags netgo -o release/linux/%s/drone-manifest-ecr ./cmd/drone-manifest-ecr' % (ctx.build.commit[0:8], arch),
+      'go build -v -ldflags "-X main.version=%s" -a -tags netgo -o release/linux/%s/drone-manifest-ecr .' % (ctx.build.commit[0:8], arch),
     ]
 
   return {
