@@ -82,7 +82,7 @@ func Exec(ctx context.Context, args *Args) error {
 	// Auto tag behavior
 	if args.AutoTag {
 		if tagging.UseDefaultTag(args.Commit.Ref, args.Repo.Branch) {
-			args.Tags = tagging.DefaultTags(args.Commit.Ref)
+			args.Tags = tagging.DefaultTags(args.Commit.Ref, args.Commit.Rev)
 		} else {
 			logrus.Infof("skipping automated tags for %s", args.Commit.Ref)
 			return nil

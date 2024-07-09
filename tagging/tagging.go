@@ -18,20 +18,22 @@ func splitOff(input string, delim string) string {
 }
 
 // DefaultTags returns a set of default suggested tags.
-func DefaultTags(ref string) []string {
+func DefaultTags(ref string, sha string) []string {
 	if !strings.HasPrefix(ref, "refs/tags/") {
-		return []string{"latest"}
+		return []string{sha}
 	}
 
 	v := stripTagPrefix(ref)
 
 	version, err := semver.NewVersion(v)
 	if err != nil {
-		return []string{"latest"}
+		return []string{sha}
 	}
 
 	if version.PreRelease != "" || version.Metadata != "" {
 		return []string{
+			sha,
+			"latest",
 			version.String(),
 		}
 	}
@@ -42,12 +44,16 @@ func DefaultTags(ref string) []string {
 
 	if version.Major == 0 {
 		return []string{
+			sha,
+			"latest",
 			fmt.Sprintf("%0*d.%0*d", len(dotParts[0]), version.Major, len(dotParts[1]), version.Minor),
 			fmt.Sprintf("%0*d.%0*d.%0*d", len(dotParts[0]), version.Major, len(dotParts[1]), version.Minor, len(dotParts[2]), version.Patch),
 		}
 	}
 
 	return []string{
+		sha,
+		"latest",
 		fmt.Sprintf("%0*d", len(dotParts[0]), version.Major),
 		fmt.Sprintf("%0*d.%0*d", len(dotParts[0]), version.Major, len(dotParts[1]), version.Minor),
 		fmt.Sprintf("%0*d.%0*d.%0*d", len(dotParts[0]), version.Major, len(dotParts[1]), version.Minor, len(dotParts[2]), version.Patch),
