@@ -104,7 +104,7 @@ func Exec(ctx context.Context, args *Args) error {
 
 	region := args.Region
 	assumeRole := args.AssumeRole
-	externalId := args.ExternalID
+	externalID := args.ExternalID
 
 	if region == "" {
 		region = defaultRegion
@@ -120,7 +120,7 @@ func Exec(ctx context.Context, args *Args) error {
 		log.Fatalf("error creating aws session: %v", err)
 	}
 
-	svc := getECRClient(sess, assumeRole, externalId)
+	svc := getECRClient(sess, assumeRole, externalID)
 	username, password, _, err := getAuthInfo(svc)
 
 	if err != nil {
@@ -166,21 +166,21 @@ func Exec(ctx context.Context, args *Args) error {
 	return nil
 }
 
-func getECRClient(sess *session.Session, role string, externalId string) *ecr.ECR {
+func getECRClient(sess *session.Session, role string, externalID string) *ecr.ECR {
 	if role == "" {
 		return ecr.New(sess)
 	}
-	if externalId != "" {
+	if externalID != "" {
 		return ecr.New(sess, &aws.Config{
 			Credentials: stscreds.NewCredentials(sess, role, func(p *stscreds.AssumeRoleProvider) {
-				p.ExternalID = &externalId
+				p.ExternalID = &externalID
 			}),
 		})
-	} else {
-		return ecr.New(sess, &aws.Config{
-			Credentials: stscreds.NewCredentials(sess, role),
-		})
 	}
+
+	return ecr.New(sess, &aws.Config{
+		Credentials: stscreds.NewCredentials(sess, role),
+	})
 }
 
 func getAuthInfo(svc *ecr.ECR) (username, password, registry string, err error) {
