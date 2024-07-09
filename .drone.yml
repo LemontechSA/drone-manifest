@@ -61,13 +61,13 @@ steps:
     image: plugins/docker
     settings:
       dockerfile: docker/Dockerfile.linux.amd64
-      repo: plugins/manifest
+      repo: lemontech/drone-manifest-ecr
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      auto_tag: true
-      auto_tag_suffix: linux-amd64
+      tags:
+        - ${DRONE_COMMIT_SHA}-linux-amd64
     when:
       ref:
         - refs/heads/master
@@ -76,7 +76,7 @@ steps:
     image: plugins/docker
     settings:
       dockerfile: docker/Dockerfile.linux.amd64
-      repo: plugins/manifest
+      repo: lemontech/drone-manifest-ecr
       dry_run: true
       tags: linux-amd64
     when:
@@ -118,13 +118,13 @@ steps:
     image: plugins/docker
     settings:
       dockerfile: docker/Dockerfile.linux.arm64
-      repo: plugins/manifest
+      repo: lemontech/drone-manifest-ecr
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      auto_tag: true
-      auto_tag_suffix: linux-arm64
+      tags:
+        - ${DRONE_COMMIT_SHA}-linux-arm64
     when:
       ref:
         - refs/heads/master
@@ -133,10 +133,10 @@ steps:
     image: plugins/docker
     settings:
       dockerfile: docker/Dockerfile.linux.arm64
-      repo: plugins/manifest
+      repo: lemontech/drone-manifest-ecr
       dry_run: true
       tags: linux-arm64
-    when:
+    when: 
       ref:
         - refs/pull/**
 depends_on:
@@ -158,15 +158,18 @@ platform:
 
 steps:
   - name: manifest
-    image: plugins/manifest:linux-amd64
+    image: plugins/manifest
     settings:
-      auto_tag: "true"
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      spec: docker/manifest.tmpl
-      ignore_missing: true
+      target: lemontech/drone-manifest-ecr
+      template: lemontech/drone-manifest-ecr:${DRONE_COMMIT_SHA}-OS-ARCH
+      auto_tag: true
+      platforms:
+        - linux/amd64
+        - linux/arm64
 depends_on:
   - linux-amd64
   - linux-arm64
