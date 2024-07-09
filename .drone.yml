@@ -1,0 +1,176 @@
+kind: pipeline
+type: kubernetes
+name: testing
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: lint
+    image: golang:1.21
+    pull: always
+    commands:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - golangci-lint version
+      - golangci-lint run
+    volumes:
+      - name: gopath
+        path: "/go"
+  - name: test
+    image: golang:1.21
+    commands:
+      - go test -cover ./...
+    volumes:
+      - name: gopath
+        path: "/go"
+volumes:
+  - name: gopath
+    temp: {}
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/tags/**
+    - refs/pull/**
+
+---
+kind: pipeline
+type: kubernetes
+name: linux-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: environment
+    image: golang:1.21
+    pull: always
+    environment:
+      CGO_ENABLED: "0"
+    commands:
+      - go version
+      - go env
+  - name: build
+    image: golang:1.21
+    environment:
+      CGO_ENABLED: "0"
+    commands:
+      - go build -v -ldflags "-X main.version=" -a -tags netgo -o release/linux/amd64/drone-manifest-ecr .
+  - name: docker
+    image: plugins/docker
+    settings:
+      dockerfile: docker/Dockerfile.linux.amd64
+      repo: plugins/manifest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      auto_tag: true
+      auto_tag_suffix: linux-amd64
+    when:
+      ref:
+        - refs/heads/master
+        - refs/tags/**
+  - name: docker-dry-run
+    image: plugins/docker
+    settings:
+      dockerfile: docker/Dockerfile.linux.amd64
+      repo: plugins/manifest
+      dry_run: true
+      tags: linux-amd64
+    when:
+      ref:
+        - refs/pull/**
+depends_on:
+  - testing
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/tags/**
+    - refs/pull/**
+
+---
+kind: pipeline
+type: kubernetes
+name: linux-arm64
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+  - name: environment
+    image: golang:1.21
+    pull: always
+    environment:
+      CGO_ENABLED: "0"
+    commands:
+      - go version
+      - go env
+  - name: build
+    image: golang:1.21
+    environment:
+      CGO_ENABLED: "0"
+    commands:
+      - go build -v -ldflags "-X main.version=" -a -tags netgo -o release/linux/arm64/drone-manifest-ecr .
+  - name: docker
+    image: plugins/docker
+    settings:
+      dockerfile: docker/Dockerfile.linux.arm64
+      repo: plugins/manifest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      auto_tag: true
+      auto_tag_suffix: linux-arm64
+    when:
+      ref:
+        - refs/heads/master
+        - refs/tags/**
+  - name: docker-dry-run
+    image: plugins/docker
+    settings:
+      dockerfile: docker/Dockerfile.linux.arm64
+      repo: plugins/manifest
+      dry_run: true
+      tags: linux-arm64
+    when:
+      ref:
+        - refs/pull/**
+depends_on:
+  - testing
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/tags/**
+    - refs/pull/**
+
+---
+kind: pipeline
+type: kubernetes
+name: manifest
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: manifest
+    image: plugins/manifest:linux-amd64
+    settings:
+      auto_tag: "true"
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      spec: docker/manifest.tmpl
+      ignore_missing: true
+depends_on:
+  - linux-amd64
+  - linux-arm64
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/tags/**
