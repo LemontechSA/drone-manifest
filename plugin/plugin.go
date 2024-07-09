@@ -89,6 +89,8 @@ func Exec(ctx context.Context, args *Args) error {
 		}
 	}
 
+	logrus.Infof("image tags: %s", strings.Join(args.Tags, ", "))
+
 	// Get the yaml to push
 	var yamlFunc func(*Args) (types.YAMLInput, error)
 	if args.Spec != "" {
@@ -130,8 +132,8 @@ func Exec(ctx context.Context, args *Args) error {
 	logrus.Info("pushing manifest")
 
 	digest, length, err := registry.PushManifestList(
-		username,           // --access-key-id
-		password,           // --secret-access-key
+		username,
+		password,
 		yamlInput,          // --from-spec
 		args.IgnoreMissing, // --ignore-missing
 		args.SkipVerify,    // --insecure
