@@ -136,7 +136,7 @@ func Exec(ctx context.Context, args *Args) error {
 		args.IgnoreMissing, // --ignore-missing
 		args.SkipVerify,    // --insecure
 		false,              // --plain-http
-		types.Docker,       // --type
+		types.OCI,          // --type
 		"",                 // --docker-cfg
 	)
 	if err != nil {
