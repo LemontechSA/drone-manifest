@@ -62,7 +62,7 @@ func DefaultTags(ref string, sha string) []string {
 
 // UseDefaultTag to restrict latest tag for default branch.
 func UseDefaultTag(ref, defaultBranch string) bool {
-	if strings.HasPrefix(ref, "refs/tags/") {
+	if strings.HasPrefix(ref, "refs/tags/") || strings.HasPrefix(ref, "refs/pull/") {
 		return true
 	}
 
